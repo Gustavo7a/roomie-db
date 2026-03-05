@@ -1,6 +1,6 @@
 CREATE TYPE horarios AS ENUM ('MORNING', 'AFTERNOON', 'EVENING', 'DAWN');
 CREATE TYPE tipo_genero AS ENUM ('MALE', 'FEMALE', 'OTHER', 'MIXED');
-CREATE TYPE status_contrato AS ENUM ('ACTIVE', 'FINISHED', 'CANCELLED'); 
+CREATE TYPE status_contrato AS ENUM ('PENDING', 'ACTIVE', 'FINISHED', 'CANCELLED');
 CREATE TYPE user_role AS ENUM ('ADMIN', 'USER');
 CREATE TYPE tipo_imovel AS ENUM ('HOUSE', 'APARTMENT', 'STUDIO', 'ROOM', 'DORMITORY');
 CREATE TYPE status_anuncio AS ENUM ('DRAFT', 'ACTIVE', 'RENTED');
@@ -134,7 +134,7 @@ CREATE TABLE contrato_locacao(
     data_inicio DATE NOT NULL,
     data_fim DATE NOT NULL,
     valor_aluguel DECIMAL(10, 2) NOT NULL,
-    status_contrato status_contrato NOT NULL,
+    status_contrato status_contrato NOT NULL DEFAULT 'PENDING',
 
     CONSTRAINT fk_contrato_imovel
         FOREIGN KEY (id_imovel) 

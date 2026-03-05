@@ -1,8 +1,24 @@
 CREATE OR REPLACE FUNCTION fn_sincronizar_vagas_imovel()
 RETURNS TRIGGER AS $$
 BEGIN
-    -- Contrato novo sendo ATIVADO
+    -- Contrato novo sendo ATIVADO diretamente no INSERT
     IF TG_OP = 'INSERT' AND NEW.status_contrato = 'ACTIVE' THEN
+        UPDATE imovel
+        SET vagas_disponiveis = vagas_disponiveis - 1
+        WHERE id_imovel = NEW.id_imovel
+          AND vagas_disponiveis > 0;
+
+        -- Se zerou as vagas, marca imóvel como RENTED
+        UPDATE imovel
+        SET status = 'RENTED'
+        WHERE id_imovel = NEW.id_imovel
+          AND vagas_disponiveis = 0;
+
+    -- Contrato passa de PENDING para ACTIVE
+    ELSIF TG_OP = 'UPDATE'
+        AND OLD.status_contrato = 'PENDING'
+        AND NEW.status_contrato = 'ACTIVE' THEN
+
         UPDATE imovel
         SET vagas_disponiveis = vagas_disponiveis - 1
         WHERE id_imovel = NEW.id_imovel
@@ -26,6 +42,8 @@ BEGIN
                 ELSE status
             END
         WHERE id_imovel = NEW.id_imovel;
+
+    -- PENDING cancelado/finalizado: sem impacto nas vagas (nunca foram decrementadas)
     END IF;
 
     RETURN NEW;
