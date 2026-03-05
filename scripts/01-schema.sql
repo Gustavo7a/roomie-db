@@ -172,6 +172,23 @@ CREATE TABLE avaliacao_imovel(
         ON DELETE CASCADE
 );
 
+CREATE TABLE interesse(
+    id_interesse SERIAL PRIMARY KEY,
+    id_estudante INT NOT NULL,
+    id_imovel INT NOT NULL,
+    data_interesse TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+
+    CONSTRAINT fk_interesse_estudante
+        FOREIGN KEY (id_estudante)
+        REFERENCES estudante(id_estudante)
+        ON DELETE CASCADE,
+
+    CONSTRAINT fk_interesse_imovel
+        FOREIGN KEY (id_imovel)
+        REFERENCES imovel(id_imovel)
+        ON DELETE CASCADE
+);
+
 CREATE TABLE chat(
     id_chat SERIAL PRIMARY KEY,
     id_estudante INT NOT NULL,
