@@ -126,11 +126,35 @@ CREATE TABLE imagem_imovel (
         ON DELETE CASCADE
 );
 
+CREATE TABLE chat(
+    id_chat SERIAL PRIMARY KEY,
+    id_estudante INT NOT NULL,
+    id_proprietario INT NOT NULL,
+    id_imovel INT NOT NULL,
+    data_criacao TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+
+    CONSTRAINT fk_chat_estudante
+        FOREIGN KEY (id_estudante)
+        REFERENCES estudante(id_estudante)
+        ON DELETE CASCADE,
+
+    CONSTRAINT fk_chat_proprietario
+        FOREIGN KEY (id_proprietario)
+        REFERENCES usuario(id_usuario)
+        ON DELETE CASCADE,
+    
+    CONSTRAINT fk_chat_imovel
+        FOREIGN KEY (id_imovel)
+        REFERENCES imovel(id_imovel)
+        ON DELETE CASCADE
+);
+
 CREATE TABLE contrato_locacao(
     id_contrato SERIAL PRIMARY KEY,
     id_imovel INT NOT NULL,
     id_estudante INT NOT NULL,
     id_proprietario INT NOT NULL,
+    id_chat INT,
     data_inicio DATE NOT NULL,
     data_fim DATE NOT NULL,
     valor_aluguel DECIMAL(10, 2) NOT NULL,
@@ -151,7 +175,12 @@ CREATE TABLE contrato_locacao(
     CONSTRAINT fk_contrato_proprietario
         FOREIGN KEY (id_proprietario) 
         REFERENCES usuario(id_usuario)
-        ON DELETE CASCADE
+        ON DELETE CASCADE,
+
+    CONSTRAINT fk_contrato_chat
+        FOREIGN KEY (id_chat)
+        REFERENCES chat(id_chat)
+        ON DELETE SET NULL
 );
 
 CREATE TABLE avaliacao_imovel(
@@ -186,29 +215,6 @@ CREATE TABLE interesse(
         ON DELETE CASCADE,
 
     CONSTRAINT fk_interesse_imovel
-        FOREIGN KEY (id_imovel)
-        REFERENCES imovel(id_imovel)
-        ON DELETE CASCADE
-);
-
-CREATE TABLE chat(
-    id_chat SERIAL PRIMARY KEY,
-    id_estudante INT NOT NULL,
-    id_proprietario INT NOT NULL,
-    id_imovel INT NOT NULL,
-    data_criacao TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-
-    CONSTRAINT fk_chat_estudante
-        FOREIGN KEY (id_estudante)
-        REFERENCES estudante(id_estudante)
-        ON DELETE CASCADE,
-
-    CONSTRAINT fk_chat_proprietario
-        FOREIGN KEY (id_proprietario)
-        REFERENCES usuario(id_usuario)
-        ON DELETE CASCADE,
-    
-    CONSTRAINT fk_chat_imovel
         FOREIGN KEY (id_imovel)
         REFERENCES imovel(id_imovel)
         ON DELETE CASCADE
