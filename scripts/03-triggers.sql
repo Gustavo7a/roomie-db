@@ -1,22 +1,9 @@
 CREATE OR REPLACE FUNCTION fn_sincronizar_vagas_imovel()
 RETURNS TRIGGER AS $$
 BEGIN
-    -- Contrato novo sendo ATIVADO diretamente no INSERT
-    IF TG_OP = 'INSERT' AND NEW.status_contrato = 'ACTIVE' THEN
-        UPDATE imovel
-        SET vagas_disponiveis = vagas_disponiveis - 1
-        WHERE id_imovel = NEW.id_imovel
-          AND vagas_disponiveis > 0;
-
-        -- Se zerou as vagas, marca imóvel como RENTED
-        UPDATE imovel
-        SET status = 'RENTED'
-        WHERE id_imovel = NEW.id_imovel
-          AND vagas_disponiveis = 0;
-
-    -- Contrato passa de PENDING para ACTIVE
-    ELSIF TG_OP = 'UPDATE'
-        AND OLD.status_contrato = 'PENDING'
+    -- UPDATE: qualquer status → ACTIVE (ex: PENDING → ACTIVE quando estudante aceita o contrato)
+    IF TG_OP = 'UPDATE'
+        AND OLD.status_contrato <> 'ACTIVE'
         AND NEW.status_contrato = 'ACTIVE' THEN
 
         UPDATE imovel
@@ -30,7 +17,7 @@ BEGIN
         WHERE id_imovel = NEW.id_imovel
           AND vagas_disponiveis = 0;
 
-    -- Contrato passa de ACTIVE para FINISHED ou CANCELLED
+    -- UPDATE: ACTIVE → FINISHED ou CANCELLED
     ELSIF TG_OP = 'UPDATE'
         AND OLD.status_contrato = 'ACTIVE'
         AND NEW.status_contrato IN ('FINISHED', 'CANCELLED') THEN
@@ -43,7 +30,7 @@ BEGIN
             END
         WHERE id_imovel = NEW.id_imovel;
 
-    -- PENDING cancelado/finalizado: sem impacto nas vagas (nunca foram decrementadas)
+    -- PENDING → CANCELLED/FINISHED: sem impacto nas vagas (nunca foram decrementadas)
     END IF;
 
     RETURN NEW;
@@ -51,6 +38,6 @@ END;
 $$ LANGUAGE plpgsql;
 
 CREATE TRIGGER trg_atualizar_vagas_contrato
-AFTER INSERT OR UPDATE OF status_contrato ON contrato_locacao
+AFTER UPDATE OF status_contrato ON contrato_locacao
 FOR EACH ROW
 EXECUTE FUNCTION fn_sincronizar_vagas_imovel();
